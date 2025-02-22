@@ -6,10 +6,16 @@ public class MappingProfile : Profile
 {
 	public MappingProfile()
 	{
-		CreateMap<Order, OrderDto>()
-				.ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.Status)); ;
+		CreateMap<Order, OrderDto>();
 		CreateMap<OrderItem, OrderItemDto>();
 		CreateMap<Pizza, PizzaDto>();
+		CreateMap<PizzaSize, PizzaSizeDto>();
 		CreateMap<User, UserDto>();
+
+		CreateMap<CreatePizzaDto, Pizza>();
+		CreateMap<CreatePizzaSizeDto, PizzaSize>();
+
+		CreateMap<UpdatePizzaDto, Pizza>();
+		CreateMap<UpdatePizzaSizeDto, PizzaSize>();
 	}
 }

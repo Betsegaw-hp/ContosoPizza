@@ -9,7 +9,7 @@ using Microsoft.OpenApi.Models;
 using ContosoPizza.Middlewares;
 using Microsoft.AspNetCore.Authorization;
 using ContosoPizza.Policies;
-using ContosoPizza.Constantes;
+using ContosoPizza.Constants;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy(Constants.OrderOwnerOrAdminPolicy.ToString(), policy =>
+        options.AddPolicy(PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString(), policy =>
         policy.Requirements.Add(new OrderOwnerOrAdminRequirement()));
     });
 
@@ -110,8 +110,9 @@ else
 }
 
 app.UseMiddleware<UserContextMiddleware>();
-
 app.UseHttpsRedirection();
+
+app.MapSwagger().RequireAuthorization();
 
 app.UseAuthentication();
 app.UseAuthorization();

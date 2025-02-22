@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using AutoMapper;
 using ContosoPizza.DTOs;
@@ -24,19 +25,25 @@ namespace ContosoPizza.Services
 		{
 			var orders = await _context.Orders
 								.AsNoTracking()
+								.Include(o => o.User)
 								.Include(o => o.OrderItems)
-								.ThenInclude(oi => oi.Pizza)
+									.ThenInclude(oi => oi.PizzaSize)
+										.ThenInclude(ps => ps.Pizza)
 								.OrderByDescending(o => o.Timestamp)
 								.ToListAsync();
 
-			return _mapper.Map<List<OrderDto>>(orders);
+			var orderDto = _mapper.Map<List<OrderDto>>(orders);
+
+			return orderDto;
 		}
 		public async Task<OrderDto?> Get(int id)
 		{
 			var order = await _context.Orders
 								.AsNoTracking()
+								.Include(o => o.User)
 								.Include(o => o.OrderItems)
-								.ThenInclude(oi => oi.Pizza)
+									.ThenInclude(oi => oi.PizzaSize)
+										.ThenInclude(ps => ps.Pizza)
 								.FirstOrDefaultAsync(o => o.Id == id);
 
 			return _mapper.Map<OrderDto>(order);
@@ -47,7 +54,8 @@ namespace ContosoPizza.Services
 					.AsNoTracking()
 					.Where(order => order.UserId == userId)
 					.Include(o => o.OrderItems)
-					.ThenInclude(oi => oi.Pizza)
+						.ThenInclude(oi => oi.PizzaSize)
+							.ThenInclude(ps => ps.Pizza)
 					.OrderByDescending(o => o.Timestamp)
 					.ToListAsync();
 
@@ -58,26 +66,30 @@ namespace ContosoPizza.Services
 			if (createOrderDto.OrderItems == null || createOrderDto.OrderItems.Count == 0)
 				throw new ArgumentException("Order must contain at least one item.");
 
-			var requestedPizzaIds = createOrderDto.OrderItems.Select(oi => oi.PizzaId).ToList();
-			var existingPizzaIds = await _context.Pizzas
-				.Where(p => requestedPizzaIds.Contains(p.Id))
-				.Select(p => p.Id)
+			var requestedPizzaSizeIds = createOrderDto.OrderItems.Select(oi => oi.PizzaSizeId).ToList();
+			var existingPizzaSizes = await _context.PizzaSizes
+				.Where(ps => requestedPizzaSizeIds.Contains(ps.Id))
 				.ToListAsync();
 
-			if (requestedPizzaIds.Except(existingPizzaIds).Any())
+			if (requestedPizzaSizeIds.Except(existingPizzaSizes.Select(ps => ps.Id)).Any())
 				throw new InvalidOperationException("One or more PizzaId(s) are invalid.");
 
 			var userId = Convert.ToInt32(_httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 			var order = new Order
 			{
 				UserId = userId,
-				OrderItems = createOrderDto.OrderItems.Select(oi => new OrderItem
+				OrderItems = createOrderDto.OrderItems.Select(oi =>
 				{
-					PizzaId = oi.PizzaId,
-					Quantity = oi.Quantity
+					var pizzaSize = existingPizzaSizes.First(ps => ps.Id == oi.PizzaSizeId);
+					return new OrderItem
+					{
+						PizzaSizeId = oi.PizzaSizeId,
+						Quantity = oi.Quantity,
+						UnitPrice = pizzaSize.Price
+					};
 				}).ToList()
 			};
-
+			order.UpdateTotalPrice();
 
 			_context.Orders.Add(order);
 			await _context.SaveChangesAsync();

@@ -1,4 +1,4 @@
-using ContosoPizza.Constantes;
+using ContosoPizza.Constants;
 using ContosoPizza.DTOs;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
@@ -38,7 +38,7 @@ namespace ContosoPizza.Controllers
 		{
 			var order = await _orderServices.Get(id);
 
-			var authResult = await _authorizationService.AuthorizeAsync(User, order?.Id, Constants.OrderOwnerOrAdminPolicy.ToString());
+			var authResult = await _authorizationService.AuthorizeAsync(User, order?.Id, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
 			if (!authResult.Succeeded)
 				return StatusCode(403, "You are not authorized to view this order.");
 
@@ -52,7 +52,7 @@ namespace ContosoPizza.Controllers
 
 			foreach (var order in orders)
 			{
-				var authResult = await _authorizationService.AuthorizeAsync(User, order.Id, Constants.OrderOwnerOrAdminPolicy.ToString());
+				var authResult = await _authorizationService.AuthorizeAsync(User, order.Id, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
 				if (!authResult.Succeeded)
 				{
 					return StatusCode(403, "You are not authorized to view these orders or atleast an order.");
@@ -76,7 +76,7 @@ namespace ContosoPizza.Controllers
 			var order = await _orderServices.Get(id);
 			if (order == null) return NotFound();
 
-			var authResult = await _authorizationService.AuthorizeAsync(User, order.Id, Constants.OrderOwnerOrAdminPolicy.ToString());
+			var authResult = await _authorizationService.AuthorizeAsync(User, order.Id, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
 			if (!authResult.Succeeded)
 				return StatusCode(403, "You are not authorized to cancel this order.");
 

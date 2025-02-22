@@ -1,11 +1,3 @@
 {
-	"sqltools.connections": [
-		{
-			"previewLimit": 50,
-			"driver": "SQLite",
-			"name": "pizza",
-			"group": "csharp",
-			"database": "${workspaceFolder:ContosoPizza}/pizza.db"
-		}
-	]
+	"sqltools.connections": []
 }

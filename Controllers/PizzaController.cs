@@ -1,3 +1,4 @@
+using ContosoPizza.DTOs;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -35,31 +36,22 @@ public class PizzaController : ControllerBase
 	// POST action
 	[Authorize(Roles = "Admin")]
 	[HttpPost]
-	public async Task<IActionResult> Create(Pizza pizza)
+	public async Task<IActionResult> Create(CreatePizzaDto createPizzaDto)
 	{
-		var p = await _pizzaServices.Get(pizza.Id);
-		if (p != null)
-			return BadRequest($"pizza with id: {pizza.Id} exists already!");
-		await _pizzaServices.Add(pizza);
+		var pizza = await _pizzaServices.Add(createPizzaDto);
 		return CreatedAtAction(nameof(GetOne), new { id = pizza.Id }, await _pizzaServices.Get(pizza.Id));
 	}
 
 	// PUT action
 	[Authorize(Roles = "Admin")]
 	[HttpPut("{id}")]
-	public async Task<IActionResult> Update(int id, [FromBody] Pizza pizza)
+	public async Task<IActionResult> Update(int id, [FromBody] UpdatePizzaDto pizza)
 	{
 		if (id != pizza.Id)
 			return BadRequest($"The request body's Id: {pizza.Id} value doesn't match the route's id: {id} value.");
 
-		var existingPizza = await _pizzaServices.Get(id);
-		if (existingPizza == null)
-			return NotFound($"The pizza with id: {id} doesn't exist!");
-
-		existingPizza.Name = pizza.Name;
-		existingPizza.IsGlutenFree = pizza.IsGlutenFree;
-		await _pizzaServices.Update(existingPizza);
-		return NoContent();
+		var updatedPizza = await _pizzaServices.Update(pizza);
+		return Ok(updatedPizza);
 	}
 	// DELETE action
 	[Authorize(Roles = "Admin")]

@@ -7,8 +7,8 @@ namespace ContosoPizza.Models
 		public DbSet<Pizza> Pizzas { get; set; }
 		public DbSet<User> Users { get; set; }
 		public DbSet<Order> Orders { get; set; }
-
 		public DbSet<OrderItem> OrderItems { get; set; }
+		public DbSet<PizzaSize> PizzaSizes { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
@@ -25,9 +25,9 @@ namespace ContosoPizza.Models
 				.OnDelete(DeleteBehavior.Cascade);
 
 			modelBuilder.Entity<OrderItem>()
-				.HasOne(oi => oi.Pizza)
+				.HasOne(oi => oi.PizzaSize)
 				.WithMany()
-				.HasForeignKey(oi => oi.PizzaId)
+				.HasForeignKey(oi => oi.PizzaSizeId)
 				.OnDelete(DeleteBehavior.Cascade);
 		}
 	}
