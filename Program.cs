@@ -54,6 +54,19 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new OrderOwnerOrAdminRequirement()));
     });
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
 builder.Services.AddHttpContextAccessor();
 
 // Swagger and configure authentication
@@ -108,7 +121,7 @@ else
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
+app.UseCors("AllowFrontend");
 app.UseMiddleware<UserContextMiddleware>();
 app.UseHttpsRedirection();
 
