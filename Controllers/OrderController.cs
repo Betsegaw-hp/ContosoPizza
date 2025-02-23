@@ -37,8 +37,9 @@ namespace ContosoPizza.Controllers
 		public async Task<IActionResult> GetOrder(int id)
 		{
 			var order = await _orderServices.Get(id);
+			if (order == null) return NotFound("Order not found.");
 
-			var authResult = await _authorizationService.AuthorizeAsync(User, order?.Id, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
+			var authResult = await _authorizationService.AuthorizeAsync(User, order.UserId, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
 			if (!authResult.Succeeded)
 				return StatusCode(403, "You are not authorized to view this order.");
 
@@ -52,7 +53,7 @@ namespace ContosoPizza.Controllers
 
 			foreach (var order in orders)
 			{
-				var authResult = await _authorizationService.AuthorizeAsync(User, order.Id, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
+				var authResult = await _authorizationService.AuthorizeAsync(User, order.UserId, PolicyKeyWords.OrderOwnerOrAdminPolicy.ToString());
 				if (!authResult.Succeeded)
 				{
 					return StatusCode(403, "You are not authorized to view these orders or atleast an order.");
